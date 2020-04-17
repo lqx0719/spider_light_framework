@@ -1,5 +1,7 @@
 package webpageResult;
 
-public interface WebpageResult<T> {
+import request.Request;
 
+public interface WebpageResult<T> {
+	void process(T item, Request request);
 }
