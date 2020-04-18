@@ -16,8 +16,10 @@ import event.EventManager;
 import processorQueue.processorQueue;
 import request.Request;
 import response.Response;
+import response.Result;
 import spider.Spider;
 import webpageDownloader.WebpageDownloader;
+import webpageResult.WebpageResult;
 
 public class frameworkEngine {
 	private List<Spider> spiders;
@@ -27,6 +29,7 @@ public class frameworkEngine {
 	private ExecutorService executorService;
 	
 	public frameworkEngine(Framework framework) {
+	    
 		this.spiders = framework.spiders;
 		this.config = framework.config;
 		this.processorQueue = new processorQueue();
@@ -37,12 +40,11 @@ public class frameworkEngine {
 	}
 	
 	public void start() {
+	    EventManager.startEvent(Event.GLOBAL_STARTED, config);
 		if(isRunning) {
 			throw new RuntimeException("爬虫引擎已经启动了！");
 		}
 		isRunning = true;
-		EventManager.startEvent(Event.GLOBAL_STARTED, config);
-		
 		for(Spider spider:spiders) {
 			Config configer = config.clone();
 			System.out.println("爬虫任务 [" + spider.getName() + "] 开始！！");
@@ -106,9 +108,18 @@ public class frameworkEngine {
 				continue;
 			}
 			Response response = processorQueue.nextResponse();
+			Result result = response.getRequest().getParser().parse(response);
+			List<Request> nextRequests = result.getRequests();
+			if(null != nextRequests) {
+			    nextRequests.forEach(request -> processorQueue.addRequest(request));
+			}
 			
-			//response结果解析
-			    
+			if(null != result.getItem()) {
+			    List<WebpageResult> webpageResults = response.getRequest().getSpider().getWebpageResults();
+			    for(WebpageResult webpageResult:webpageResults) {
+			        webpageResult.process(result.getItem(), response.getRequest());
+			    }
+			}
 		}
 	}
 }

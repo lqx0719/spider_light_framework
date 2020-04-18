@@ -25,6 +25,7 @@ public abstract class Spider {
 	
 	public Spider(String name) {
 		this.name = name;
+		
 		EventManager.RegistEvent(Event.SPIDER_STARTED, this::onStart);
 	}
 	

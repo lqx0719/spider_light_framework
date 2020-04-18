@@ -1,5 +1,7 @@
 package configuration;
 
+import java.io.File;
+
 public class Config implements Cloneable{
 
 	private int timeout = 10_1000;
@@ -12,6 +14,7 @@ public class Config implements Cloneable{
 	
 	private int queueSize;
 	
+	private String filePath = System.getProperty("user.dir")+File.separator+"src"+File.separator+"downloadFile";
 	public static Config newConfig() {
 		return new Config();
 	}
@@ -61,6 +64,10 @@ public class Config implements Cloneable{
 		return this.queueSize;
 	}
 	
+	public String getFilePath() {
+	    return this.filePath;
+	}
+	
 	@Override
 	public Config clone() {
 		try {
@@ -71,4 +78,5 @@ public class Config implements Cloneable{
 		}
 		return null;
 	}
+	
 }
