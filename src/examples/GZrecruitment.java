@@ -5,6 +5,9 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +20,13 @@ import request.Request;
 import response.Response;
 import response.Result;
 import spider.Spider;
+import utils.DBUtils;
 import utils.FrameworkUtils;
 import webpageResult.WebpageResult;
 
 public class GZrecruitment extends Spider{
-    public GZrecruitment(String name) {
-        super(name);
+    public GZrecruitment(String name,Connection connection) {
+        super(name,connection);
         this.startUrls(
                 "https://www.gz91.com/JOBsearch/?keyword=文员",
                 "https://www.gz91.com/JOBsearch/?keyword=会计",
@@ -38,6 +42,12 @@ public class GZrecruitment extends Spider{
             public void process(List<String> item, Request request){
                 // TODO Auto-generated method stub
                 System.out.println("网页   " + request.getUrl() + " 内容下载完毕！！");
+                System.out.println("插入成功！一共插入  "+DBUtils.executeSQL(request.getSpider().getConnection(),item)+"  条数据！！");
+
+                /*
+                * 保存到本机
+                * */
+                /*
                 File downloadPath = new File(request.getSpider().getConfig().getFilePath()+
                         File.separator+request.getSpider().getName());
                 File downloadFile = new File(downloadPath+File.separator
@@ -64,10 +74,12 @@ public class GZrecruitment extends Spider{
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+
+                 */
             }
         });
     }
-    
+
     @Override
     public Result parse(Response response) {
         // TODO Auto-generated method stub
@@ -78,7 +90,15 @@ public class GZrecruitment extends Spider{
             String company = element.select(".zw_2").text();
             String place = element.select(".zw_3").text();
             String salary = element.select(".zw_4").text();
-            infos.add(job+ "\t" + company + "\t" + place + "\t" + salary);
+            String sql = "insert into jiuyi_spider(jiuyi_keyword,jiuyi_job,jiuyi_company,jiuyi_place,jiuyi_salary) " +
+            "values('"+
+                    FrameworkUtils.getKeywordFromUrl(response.getRequest().getUrl(), "keyword")+
+                    "','"+job+
+                    "','"+company+
+                    "','"+place+
+                    "','"+salary+"')";
+//            String info = job+ "\t" + company + "\t" + place + "\t" + salary;
+            infos.add(sql);
         }  
         Result<List<String>> result = new Result<List<String>>(infos);
         
@@ -94,11 +114,14 @@ public class GZrecruitment extends Spider{
         }
         return result;
     }
-    
+
+
     public static void main(String[] args) {
         // TODO Auto-generated method stub
-       GZrecruitment douban = new GZrecruitment("九一人才网");
+       Connection connection = DBUtils.getConnection();
+       GZrecruitment douban = new GZrecruitment("九一人才网",connection);
        Framework.newFramework(douban, Config.newConfig()).start();
+       DBUtils.closeConnection(connection);
     }
 
 }

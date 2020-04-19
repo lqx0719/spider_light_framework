@@ -1,5 +1,6 @@
 package spider;
 
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -18,14 +19,15 @@ import webpageResult.WebpageResult;
 
 public abstract class Spider {
 	protected String name;
+	protected Connection connection;
 	protected Config config;
 	protected List<String> startUrls = new ArrayList<>();
 	protected List<WebpageResult> webpageResults = new ArrayList<>();
 	protected List<Request>  requests  = new ArrayList<>();
 	
-	public Spider(String name) {
+	public Spider(String name,Connection connection) {
 		this.name = name;
-		
+		this.connection = connection;
 		EventManager.RegistEvent(Event.SPIDER_STARTED, this::onStart);
 	}
 	
@@ -101,6 +103,10 @@ public abstract class Spider {
 
 	public void setRequests(List<Request> requests) {
 		this.requests = requests;
+	}
+
+	public Connection getConnection() {
+		return connection;
 	}
 }
 	
