@@ -8,7 +8,7 @@ import request.Request;
 public class Result<T> {
     private T item;
     private List<Request> requests = new ArrayList<>();
-    
+    public Result() {}
     public Result(T item) {
         this.item = item;
     }
@@ -19,7 +19,7 @@ public class Result<T> {
     }
     
     public Result addRequest(List<Request> requests) {
-        if(!this.requests.isEmpty()) {
+        if(this.requests.isEmpty()) {
             this.requests.addAll(requests);
         }
         return this;
@@ -40,6 +40,5 @@ public class Result<T> {
     public T getItem() {
         return item;
     }
-    
-    
+
 }

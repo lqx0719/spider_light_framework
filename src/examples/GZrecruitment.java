@@ -28,9 +28,7 @@ public class GZrecruitment extends Spider{
     public GZrecruitment(String name,Connection connection) {
         super(name,connection);
         this.startUrls(
-                "https://www.gz91.com/JOBsearch/?keyword=文员",
-                "https://www.gz91.com/JOBsearch/?keyword=会计",
-                "https://www.gz91.com/JOBsearch/?keyword=销售");
+                "https://www.gz91.com/");
     }
     
     @Override
@@ -83,36 +81,67 @@ public class GZrecruitment extends Spider{
     @Override
     public Result parse(Response response) {
         // TODO Auto-generated method stub
-        Elements elements = response.body().css("#tgleft > li");
-        List<String> infos = new ArrayList<>();
-        for(Element element:elements) {
-            String job = element.select(".zwtitle_1").text();
-            String company = element.select(".zw_2").text();
-            String place = element.select(".zw_3").text();
-            String salary = element.select(".zw_4").text();
-            String sql = "insert into jiuyi_spider(jiuyi_keyword,jiuyi_job,jiuyi_company,jiuyi_place,jiuyi_salary) " +
-            "values('"+
-                    FrameworkUtils.getKeywordFromUrl(response.getRequest().getUrl(), "keyword")+
-                    "','"+job+
-                    "','"+company+
-                    "','"+place+
-                    "','"+salary+"')";
+        if(response.getRequest().getUrl().indexOf("?") < 0){
+			//主网站，提取其中的热门关键字
+			Elements elements = response.body().css(".hot_box > dl >dd");
+			List<Request> requests = new ArrayList<>();
+			for (Element e:elements){
+				requests.add(this.makeRequest("https://www.gz91.com/JOBsearch/?keyword="+e.text()));
+			}
+			Result result = new Result();
+
+			result.addRequest(requests);
+			return result;
+		}else{
+        	//关键字查询的网站，保存查询的信息
+
+			Elements elements = response.body().css("#tgleft > li");
+			List<String> infos = new ArrayList<>();
+			for(Element element:elements) {
+				String job = element.select(".zwtitle_1").text();
+				String company = element.select(".zw_2").text();
+				String place = element.select(".zw_3").text();
+				String salary = element.select(".zw_4").text();
+				String sql = "insert into jiuyi_spider(jiuyi_keyword,jiuyi_job,jiuyi_company,jiuyi_place,jiuyi_salary) " +
+						"values('"+
+						FrameworkUtils.getKeywordFromUrl(response.getRequest().getUrl(), "keyword")+
+						"','"+job+
+						"','"+company+
+						"','"+place+
+						"','"+salary+"')";
 //            String info = job+ "\t" + company + "\t" + place + "\t" + salary;
-            infos.add(sql);
-        }  
-        Result<List<String>> result = new Result<List<String>>(infos);
-        
-        //获取后十页
-        for(int i=2;i<11;i++) {
-            int page = response.getRequest().getUrl().indexOf("page");
-            if(page == -1) {
-                String nextUrl = response.getRequest().getUrl() + "&page=" + i;
-                Request nextRequest = this.makeRequest(nextUrl);
-                result.addRequest(nextRequest);
-            }
-            
-        }
-        return result;
+				infos.add(sql);
+			}
+			Result<List<String>> result = new Result<List<String>>(infos);
+
+			/*
+			* 比较前后两次的Result是否都是一样的，是的话就终止
+			* */
+
+
+			//获取下一页
+			Elements pageButton = response.body().css(".nextpage_a");
+			if(pageButton.size() != 0){
+				String nextUrl = "";
+				if(response.getRequest().getUrl().indexOf("&page=") < 0){
+					nextUrl = response.getRequest().getUrl() + "&page=2";
+
+				}else{
+					int curPage = Integer.parseInt(response.getRequest().getUrl().substring(
+							response.getRequest().getUrl().indexOf("&page=")+6
+							,response.getRequest().getUrl().length()));
+					//超过100页就停止
+					if(curPage == 100) return result;
+					nextUrl = response.getRequest().getUrl().substring(0,response.getRequest().getUrl().indexOf("&page=")+6)+
+							Integer.toString(curPage + 1);
+				}
+				Request nextRequest = this.makeRequest(nextUrl);
+				result.addRequest(nextRequest);
+			}
+
+			return result;
+		}
+
     }
 
 

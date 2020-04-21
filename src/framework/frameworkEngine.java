@@ -27,7 +27,6 @@ public class frameworkEngine {
 	private boolean isRunning;
 	private processorQueue processorQueue;
 	private ExecutorService executorService;
-	
 	public frameworkEngine(Framework framework) {
 	    
 		this.spiders = framework.spiders;
@@ -120,6 +119,7 @@ public class frameworkEngine {
 			        webpageResult.process(result.getItem(), response.getRequest());
 			    }
 			}
+
 		}
 	}
 }
