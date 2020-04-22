@@ -14,7 +14,7 @@ public class Request<T> {
     private String charset = "UTF-8";
     private Map<String,String> headers = new HashMap<>();
     private Map<String,String> cookies = new HashMap<>();
-    
+    private String info = "";
 	public Request(Spider spider,String url,Parser<T> parser) {
 		this.spider = spider;
         this.url = url;
@@ -93,5 +93,13 @@ public class Request<T> {
 
 	public Map<String, String> getHeaders(){
 	    return headers;
+	}
+
+	public String getInfo() {
+		return info;
+	}
+
+	public void setInfo(String info) {
+		this.info = info;
 	}
 }
