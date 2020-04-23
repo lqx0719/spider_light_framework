@@ -1,6 +1,6 @@
 package event;
 
 public enum Event {
-	GLOBAL_STARTED,
-	SPIDER_STARTED
+    GLOBAL_STARTED,
+    SPIDER_STARTED
 }

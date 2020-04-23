@@ -33,4 +33,5 @@ public class Response {
     public void setInfo(String info) {
         this.info = info;
     }
+
 }
