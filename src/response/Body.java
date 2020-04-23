@@ -13,7 +13,6 @@ public class Body {
     private String bodyString;
     private String charset;
     private InputStream inputStream;
-    
     public Body(InputStream inputStream,String charset) {
         this.inputStream = inputStream;
         this.charset = charset;
@@ -49,4 +48,5 @@ public class Body {
     public Elements css(String css) {
         return Jsoup.parse(this.toString()).select(css);
     }
+
 }

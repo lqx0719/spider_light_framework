@@ -26,7 +26,18 @@ import java.util.Map;
 public class ZOLdesk extends Spider {
     public ZOLdesk(String name, Connection connection){
         super(name,connection);
-        this.startUrls("http://desk.zol.com.cn/fengjing/");
+        this.startUrls("http://desk.zol.com.cn/fengjing/","http://desk.zol.com.cn/dongman/",
+                "http://desk.zol.com.cn/meinv/","http://desk.zol.com.cn/chuangyi/",
+                "http://desk.zol.com.cn/katong/","http://desk.zol.com.cn/qiche/",
+                "http://desk.zol.com.cn/youxi/","http://desk.zol.com.cn/keai/",
+                "http://desk.zol.com.cn/mingxing/","http://desk.zol.com.cn/jianzhu/",
+                "http://desk.zol.com.cn/zhiwu/","http://desk.zol.com.cn/dongwu/",
+                "http://desk.zol.com.cn/jingwu/","http://desk.zol.com.cn/yingshi/",
+                "http://desk.zol.com.cn/chemo/","http://desk.zol.com.cn/model/",
+                "http://desk.zol.com.cn/tiyu/","http://desk.zol.com.cn/shouchaobao/",
+                "http://desk.zol.com.cn/meishi/","http://desk.zol.com.cn/xingzuo/",
+                "http://desk.zol.com.cn/jieri/","http://desk.zol.com.cn/pinpai/",
+                "http://desk.zol.com.cn/beijing/","http://desk.zol.com.cn/qita/",);
     }
 
     @Override
@@ -41,7 +52,12 @@ public class ZOLdesk extends Spider {
                     img_url = entry.getValue();
                 }
                 String pic_url = img_url.replace("960x600","1920x1080");
+                FrameworkUtils.downImages(request.getSpider().getConfig().getFilePath()+
+                        File.separator+request.getSpider().getName()+File.separator
+                        + img_type,pic_url);
+
                 /*保存url到本机*/
+                /*
                 File downloadPath = new File(request.getSpider().getConfig().getFilePath()+
                         File.separator+request.getSpider().getName());
                 File downloadFile = new File(downloadPath+File.separator
@@ -66,24 +82,50 @@ public class ZOLdesk extends Spider {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
+
+                 */
             }
+
         });
+        for(Request request:this.requests){
+            request.contentType("text/html; charset=gbk");
+            request.charset("gbk");
+        }
     }
 
 
     @Override
     protected Result parse(Response response) {
         String url = response.getRequest().getUrl();
-        if(url.split("//")[1].split("/").length == 2){
+        if(url.indexOf("bizhi") < 0){
             //存储壁纸专辑的URL
             String url_head = url.split("//")[1].split("/")[0];
             Elements elements = response.body().css(".photo-list-padding .pic");
+            String pic_type = response.body().css(".choosebox dl").get(0).select(".sel").text();
             Result result = new Result();
             for(Element element:elements){
                 Request request = this.makeRequest("http://"+url_head+element.attr("href"));
-                request.setInfo(url.split("//")[1].split("/")[1]);
+                //记录壁纸的类型，比如风景、创意、卡通
+                request.setInfo(pic_type);
                 result.addRequest(request);
             }
+            //next page
+            /*
+            elements = response.body().css("#pageNext");
+            if(null!=elements){
+                for(Element e:elements){
+                    String nextUrl = "http://"+url_head+elements.attr("href");
+
+                    //只取前5页
+                    if(Integer.parseInt(nextUrl.split("//")[1]
+                            .split("/")[2].split("\\.")[0]) > 5){
+                        continue;
+                    }
+                    result.addRequest(this.makeRequest(nextUrl));
+                }
+            }
+            */
+
             return result;
         }else{
             //存储壁纸的URL
